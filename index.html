@@ -143,7 +143,16 @@ state.destinations=state.destinations||[];
 state.photos=state.photos||{};
 state.reservations=state.reservations||[];
 state.fixed=state.fixed||[];
-function save(){localStorage.setItem(KEY,JSON.stringify(state)); renderAll();}
+async function save(){
+
+ localStorage.setItem(
+   KEY,
+   JSON.stringify(state)
+ );
+
+ renderAll();
+
+}
 function byId(id){return state.apartments.find(a=>a.id===id)}
 function currentApt(){return document.querySelector("#dashApt")?.value||state.apartments[0]?.id}
 function populateApts(){
@@ -201,7 +210,34 @@ function openReservation(date=""){
 <div><label>Custo diarista</label><input name="diarista" type="number" step=".01" min="0" value="0"></div>
 <div><label>Outros custos</label><input name="outros" type="number" step=".01" min="0" value="0"></div>
 </div><br><div class="row"><button class="primary">Salvar reserva</button><button type="button" class="secondary" id="cancelRes">Cancelar</button></div></form>`;
- document.getElementById("resForm").onsubmit=e=>{e.preventDefault();const r=Object.fromEntries(new FormData(e.target)); if(r.checkout<=r.checkin)return alert("A saída deve ser depois da entrada."); const overlap=state.reservations.some(x=>x.apt===r.apt&&r.checkin<x.checkout&&r.checkout>x.checkin);if(overlap)return alert("Já existe uma reserva nesse período.");state.reservations.push({id:crypto.randomUUID(),...r});save();document.getElementById("reservationForm").innerHTML="";show("reservas")};
+const reserva={
+ id:crypto.randomUUID(),
+ ...r
+};
+
+state.reservations.push(reserva);
+
+if(window.db){
+
+ try{
+
+   addDocRef(
+      collectionRef(
+         window.db,
+         "reservations"
+      ),
+      reserva
+   );
+
+ }catch(e){
+
+   console.log(e);
+
+ }
+
+}
+
+save();
  document.getElementById("cancelRes").onclick=()=>document.getElementById("reservationForm").innerHTML="";
  show("reservas");
 }
@@ -260,6 +296,37 @@ document.getElementById("aptForm").onsubmit=e=>{e.preventDefault();const name=do
 document.getElementById("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="backup-gestao-apartamento.json";a.click();URL.revokeObjectURL(a.href)};
 document.getElementById("importFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x.apartments||!x.reservations)throw Error();x.fixed=x.fixed||[];x.destinations=x.destinations||[];x.photos=x.photos||{};localStorage.setItem(KEY,JSON.stringify(x));location.reload()}catch{alert("Backup inválido.")}};rd.readAsText(f)};
 document.getElementById("dashMonth").value=ym(today);document.getElementById("calMonth").value=ym(today);document.getElementById("fixedMonth").value=ym(today);document.getElementById("destMonth").value=ym(today);
+async function carregarReservasFirebase(){
+
+ if(!window.db)return;
+
+ try{
+
+   const snapshot =
+   await getDocsRef(
+      collectionRef(
+         window.db,
+         "reservations"
+      )
+   );
+
+   const reservas =
+   snapshot.docs.map(doc=>({
+      id:doc.id,
+      ...doc.data()
+   }));
+
+   if(reservas.length){
+      state.reservations = reservas;
+   }
+
+ }catch(e){
+   console.log(e);
+ }
+
+}
+
+carregarReservasFirebase();
 renderAll();
 </script>
 </body>
