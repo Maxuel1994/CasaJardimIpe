@@ -102,7 +102,35 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <div class="card" style="margin-top:12px"><h3>Backup</h3><button class="secondary" id="exportBtn">Exportar backup</button> <label style="display:inline-block"><span class="secondary" style="display:inline-block">Importar backup<input id="importFile" type="file" accept=".json" hidden></span></label></div>
 </section>
 </main>
+<script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyATcLyBKHs-spc9NAmbkWRs-dX8NFseA3g",
+  authDomain: "gestao-hospedagem-casa-ipe3.firebaseapp.com",
+  projectId: "gestao-hospedagem-casa-ipe3",
+  storageBucket: "gestao-hospedagem-casa-ipe3.firebasestorage.app",
+  messagingSenderId: "790031869750",
+  appId: "1:790031869750:web:10643a96e020fe75fc3597"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db = db;
+window.collectionRef = collection;
+window.addDocRef = addDoc;
+window.getDocsRef = getDocs;
+
+</script>
 <script>
 "use strict";
 const KEY="gestao_apto_v3";
