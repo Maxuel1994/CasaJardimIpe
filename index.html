@@ -110,7 +110,10 @@ import {
   getFirestore,
   collection,
   addDoc,
-  getDocs
+  getDocs,
+  onSnapshot,
+  deleteDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -129,7 +132,23 @@ window.db = db;
 window.collectionRef = collection;
 window.addDocRef = addDoc;
 window.getDocsRef = getDocs;
+function carregarReservasTempoReal() {
 
+  onSnapshot(
+    collection(db, "reservations"),
+    (snapshot) => {
+
+      state.reservations = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+
+      renderAll();
+
+    }
+  );
+
+}
 </script>
 <script>
 "use strict";
@@ -326,7 +345,7 @@ async function carregarReservasFirebase(){
 
 }
 
-carregarReservasFirebase();
+carregarReservasTempoReal();
 renderAll();
 </script>
 </body>
