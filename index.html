@@ -229,12 +229,46 @@ function openReservation(date=""){
 <div><label>Custo diarista</label><input name="diarista" type="number" step=".01" min="0" value="0"></div>
 <div><label>Outros custos</label><input name="outros" type="number" step=".01" min="0" value="0"></div>
 </div><br><div class="row"><button class="primary">Salvar reserva</button><button type="button" class="secondary" id="cancelRes">Cancelar</button></div></form>`;
-const reserva={
- id:crypto.randomUUID(),
- ...r
-};
+document.getElementById("resForm").onsubmit = async (e) => {
+    e.preventDefault();
 
-state.reservations.push(reserva);
+    const fd = new FormData(e.target);
+
+    const reserva = {
+        id: crypto.randomUUID(),
+        apt: fd.get("apt"),
+        hospede: fd.get("hospede"),
+        checkin: fd.get("checkin"),
+        checkout: fd.get("checkout"),
+        hospedes: Number(fd.get("hospedes")) || 1,
+        origem: fd.get("origem"),
+        valor: Number(fd.get("valor")) || 0,
+        desconto: Number(fd.get("desconto")) || 0,
+        taxa: Number(fd.get("taxa")) || 0,
+        cota: Number(fd.get("cota")) || 0,
+        diarista: Number(fd.get("diarista")) || 0,
+        outros: Number(fd.get("outros")) || 0
+    };
+
+    try {
+        if (window.db) {
+            await addDocRef(
+                collectionRef(window.db, "reservations"),
+                reserva
+            );
+        }
+
+        state.reservations.push(reserva);
+        save();
+
+        document.getElementById("reservationForm").innerHTML = "";
+        alert("Reserva salva com sucesso!");
+
+    } catch (erro) {
+        console.error(erro);
+        alert("Erro ao salvar no Firebase.");
+    }
+};
 
 if(window.db){
 
