@@ -244,13 +244,9 @@ const reserva = {
     outros: Number(fd.get("outros")) || 0
 };
 
-const docRef = await addDocRef(
-    collectionRef(window.db, "reservations"),
-    reserva
-);
-
-reserva.id = docRef.id;
 state.reservations.push(reserva);
+save();
+
 
 if(window.db){
 
